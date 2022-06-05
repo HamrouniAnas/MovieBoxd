@@ -1,0 +1,51 @@
+version: '3.4'
+
+services:
+
+  backend:
+    image: "anashamrouni/movieboxdback:${TAG}"
+    environment:
+      - "spring.datasource.url=jdbc:mysql://db:3306/${MYSQL_DATABASE}?useSSL=false"
+      - "spring.datasource.password=${MYSQL_ROOT_PASSWORD}"
+    ports:
+      - 8080:8080
+    networks:
+      - app-network
+    depends_on:
+      - db
+
+  frontend:
+    image: "shatha20/movieboxdfront:${TAG}"
+    ports:
+      - 9000:9000
+    networks:
+      - app-network
+    depends_on:
+      - backend
+
+  db:
+    image: mysql:5.7
+    restart: on-failure
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_DATABASE: "${MYSQL_DATABASE}"
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+    volumes:
+      - ./mysql:/var/lib/mysql
+    networks:
+      - app-network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - 80:80
+    depends_on:
+      - db
+    environment:
+      PMA_HOST: db
+    networks:
+      - app-network
+
+networks:
+  app-network:
